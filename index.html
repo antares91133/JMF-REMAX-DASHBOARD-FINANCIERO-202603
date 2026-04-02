@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Financiero — Grupo 752 | REMAX EXPRESS</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #003DA5;
+  --red: #DC1C2E;
+  --white: #FFFFFF;
+  --gray-light: #F5F5F5;
+  --gray-dark: #333333;
+  --blue-light: #E8EFF9;
+  --red-light: #FDE8EA;
+  --blue-mid: #0056D6;
+  --shadow: 0 2px 16px rgba(0,61,165,0.08);
+  --shadow-hover: 0 6px 24px rgba(0,61,165,0.14);
+  --radius: 14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Source Sans 3',sans-serif;
+  background:var(--gray-light);
+  color:var(--gray-dark);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+/* ── HEADER ── */
+.header{
+  background:linear-gradient(135deg,var(--blue) 0%,#002970 100%);
+  color:var(--white);
+  padding:28px 0 24px;
+  position:relative;
+  overflow:hidden;
+}
+.header::after{
+  content:'';position:absolute;top:-60%;right:-8%;
+  width:420px;height:420px;
+  background:radial-gradient(circle,rgba(220,28,46,0.12) 0%,transparent 70%);
+  border-radius:50%;pointer-events:none;
+}
+.header-inner{
+  max-width:1320px;margin:0 auto;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;z-index:1;flex-wrap:wrap;gap:16px;
+}
+.header-left{display:flex;align-items:center;gap:20px}
+.header-text h1{font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.55rem;letter-spacing:-0.02em;line-height:1.2}
+.header-text p{opacity:0.85;font-size:0.92rem;font-weight:400;margin-top:2px}
+.header-right{display:flex;align-items:center;gap:14px;font-size:0.85rem;opacity:0.9}
+.balloon-svg{flex-shrink:0}
+
+/* ── CONTROLS ── */
+.controls-bar{
+  max-width:1320px;margin:0 auto;padding:18px 24px;
+  display:flex;gap:12px;flex-wrap:wrap;align-items:center;
+}
+.controls-bar label{font-weight:600;font-size:0.85rem;color:var(--blue)}
+.controls-bar select,.controls-bar button{
+  font-family:'Source Sans 3',sans-serif;
+  font-size:0.88rem;padding:8px 16px;border-radius:8px;
+  border:1.5px solid #d0d7e3;background:var(--white);
+  cursor:pointer;transition:all .2s;color:var(--gray-dark);
+}
+.controls-bar select:focus,.controls-bar button:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,61,165,0.12)}
+.btn-active{background:var(--blue)!important;color:var(--white)!important;border-color:var(--blue)!important}
+
+/* ── GRID ── */
+.dashboard{max-width:1320px;margin:0 auto;padding:0 24px 40px}
+.section-title{
+  font-family:'Montserrat',sans-serif;font-weight:700;font-size:1.15rem;
+  color:var(--blue);margin:28px 0 14px;padding-left:2px;
+  display:flex;align-items:center;gap:8px;
+}
+.section-title::before{content:'';width:4px;height:22px;background:var(--red);border-radius:3px;display:inline-block}
+
+/* ── CARDS / KPI ── */
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:16px;
+}
+.kpi-card{
+  background:var(--white);border-radius:var(--radius);padding:22px 24px;
+  box-shadow:var(--shadow);transition:box-shadow .25s,transform .25s;
+  position:relative;overflow:hidden;
+}
+.kpi-card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px)}
+.kpi-card .kpi-label{font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#7a8599;margin-bottom:6px}
+.kpi-card .kpi-value{font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.7rem;color:var(--gray-dark);line-height:1.2}
+.kpi-card .kpi-sub{font-size:0.82rem;color:#7a8599;margin-top:4px}
+.kpi-card .kpi-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:0.76rem;font-weight:700;padding:3px 9px;border-radius:20px;margin-top:6px;
+}
+.badge-neg{background:var(--red-light);color:var(--red)}
+.badge-pos{background:#e6f7ee;color:#1a8a4a}
+.badge-neutral{background:var(--blue-light);color:var(--blue)}
+.kpi-card .accent-stripe{position:absolute;top:0;left:0;width:100%;height:4px}
+
+/* ── CHART CARDS ── */
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.chart-card{
+  background:var(--white);border-radius:var(--radius);padding:24px;
+  box-shadow:var(--shadow);position:relative;
+}
+.chart-card h3{font-family:'Montserrat',sans-serif;font-size:0.95rem;font-weight:700;color:var(--gray-dark);margin-bottom:14px}
+.chart-card canvas{width:100%!important}
+.chart-full{grid-column:1/-1}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-top:16px}
+.data-table{width:100%;border-collapse:collapse;font-size:0.84rem}
+.data-table thead{background:var(--blue);color:var(--white)}
+.data-table th{padding:12px 14px;text-align:right;font-weight:600;white-space:nowrap;font-family:'Montserrat',sans-serif;font-size:0.78rem;letter-spacing:0.03em}
+.data-table th:first-child{text-align:left;border-radius:var(--radius) 0 0 0}
+.data-table th:last-child{border-radius:0 var(--radius) 0 0}
+.data-table td{padding:10px 14px;text-align:right;border-bottom:1px solid #eef1f6;white-space:nowrap}
+.data-table td:first-child{text-align:left;font-weight:600;color:var(--blue)}
+.data-table tbody tr:hover{background:var(--blue-light)}
+.data-table .row-total{font-weight:700;background:#f0f4fb}
+.data-table .neg{color:var(--red)}
+.data-table .pos{color:#1a8a4a}
+
+/* ── WARNING ── */
+.warning-box{
+  background:#FFF8E1;border-left:4px solid #FFC107;
+  border-radius:0 var(--radius) var(--radius) 0;
+  padding:16px 20px;margin:16px 0;font-size:0.88rem;
+}
+.warning-box strong{color:#E65100}
+
+/* ── FOOTER ── */
+.footer{
+  background:var(--gray-dark);color:rgba(255,255,255,0.7);
+  text-align:center;padding:18px 24px;font-size:0.8rem;
+  margin-top:40px;
+}
+.footer span{color:var(--red);font-weight:700}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .chart-row{grid-template-columns:1fr}
+  .header-inner{flex-direction:column;text-align:center}
+  .header-right{justify-content:center}
+  .kpi-grid{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+  .kpi-card .kpi-value{font-size:1.35rem}
+}
+@media(max-width:500px){
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .controls-bar{flex-direction:column;align-items:stretch}
+}
+
+/* ── ANIMATION ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.kpi-card,.chart-card,.table-wrap{animation:fadeUp .5s ease both}
+.kpi-card:nth-child(2){animation-delay:.07s}
+.kpi-card:nth-child(3){animation-delay:.14s}
+.kpi-card:nth-child(4){animation-delay:.21s}
+.kpi-card:nth-child(5){animation-delay:.28s}
+.kpi-card:nth-child(6){animation-delay:.35s}
+</style>
+</head>
+<body>
+
+<!-- ════════ HEADER ════════ -->
+<header class="header">
+<div class="header-inner">
+  <div class="header-left">
+    <!-- REMAX Balloon SVG -->
+    <svg class="balloon-svg" width="62" height="80" viewBox="0 0 62 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="31" cy="30" rx="26" ry="30" fill="#DC1C2E"/>
+      <ellipse cx="31" cy="30" rx="26" ry="30" fill="url(#bg)" opacity=".25"/>
+      <rect x="21" y="14" width="20" height="11" rx="2" fill="#003DA5"/>
+      <rect x="21" y="27" width="20" height="11" rx="2" fill="#003DA5"/>
+      <text x="31" y="23" text-anchor="middle" fill="#fff" font-family="Montserrat,sans-serif" font-weight="800" font-size="7.5">RE</text>
+      <text x="31" y="36" text-anchor="middle" fill="#fff" font-family="Montserrat,sans-serif" font-weight="800" font-size="7.5">MAX</text>
+      <path d="M26 60 L31 68 L36 60" stroke="#888" stroke-width="1" fill="none"/>
+      <line x1="28" y1="60" x2="26" y2="68" stroke="#999" stroke-width=".7"/>
+      <line x1="34" y1="60" x2="36" y2="68" stroke="#999" stroke-width=".7"/>
+      <rect x="24" y="68" width="14" height="6" rx="2" fill="#C4975A" stroke="#A67B3D" stroke-width=".5"/>
+      <rect x="24" y="58" width="14" height="3" rx="1.5" fill="#DC1C2E" opacity=".6"/>
+      <defs><radialGradient id="bg" cx="40%" cy="30%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs>
+    </svg>
+    <div class="header-text">
+      <h1>Jesús Martín</h1>
+      <p>Agente Inmobiliario — RE/MAX EXPRESS, Buenos Aires</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <span>📞 011 3658-7881</span>
+    <span style="opacity:0.5">|</span>
+    <span>Análisis Grupo 752 — Cuenta de Resultados</span>
+  </div>
+</div>
+</header>
+
+<!-- ════════ CONTROLS ════════ -->
+<div class="controls-bar" id="controlsBar">
+  <label>Período:</label>
+  <select id="filterPeriod">
+    <option value="all">Todos los períodos</option>
+    <option value="oct2025">Oct 2025</option>
+    <option value="nov2025">Nov 2025</option>
+    <option value="dic2025">Dic 2025</option>
+    <option value="ene2026">Ene 2026</option>
+    <option value="feb2026">Feb 2026</option>
+    <option value="mar2026">Mar 2026</option>
+  </select>
+  <label style="margin-left:10px">Vista:</label>
+  <button id="btnAll" class="btn-active" onclick="setView('all')">Todo</button>
+  <button id="btnGastos" onclick="setView('gastos')">Solo Gastos</button>
+</div>
+
+<!-- ════════ DASHBOARD ════════ -->
+<div class="dashboard">
+
+<!-- KPIs -->
+<div class="section-title">Indicadores Principales (KPIs)</div>
+<div class="kpi-grid" id="kpiGrid"></div>
+
+<!-- Charts Row 1 -->
+<div class="section-title">Evolución Financiera</div>
+<div class="chart-row">
+  <div class="chart-card">
+    <h3>📊 Gastos por Período (Barras)</h3>
+    <canvas id="chartBar"></canvas>
+  </div>
+  <div class="chart-card">
+    <h3>📈 Resultado Neto + Proyección (Tendencia)</h3>
+    <canvas id="chartLine"></canvas>
+  </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="chart-row">
+  <div class="chart-card">
+    <h3>🍩 Composición de Gastos (%)</h3>
+    <canvas id="chartDonutGastos"></canvas>
+  </div>
+  <div class="chart-card">
+    <h3>📉 Evolución Intermensual de Gastos (%)</h3>
+    <canvas id="chartEvolucion"></canvas>
+  </div>
+</div>
+
+<!-- Projection Warning -->
+<div class="warning-box">
+  <strong>⚠️ Advertencia de significancia estadística:</strong> La muestra actual (6 períodos) es inferior al umbral recomendado (≥ 6 períodos con holgura). Las proyecciones de regresión lineal deben interpretarse con <strong>cautela</strong>. La precisión mejorará conforme se incorporen más períodos en futuros análisis.
+</div>
+
+<!-- Data Table -->
+<div class="section-title">Tabla Resumen — Detalle Completo</div>
+<div class="table-wrap">
+  <table class="data-table" id="dataTable"></table>
+</div>
+
+<!-- Projection Table -->
+<div class="section-title">Proyección Estadística (Regresión Lineal)</div>
+<div class="table-wrap">
+  <table class="data-table" id="projTable"></table>
+</div>
+
+</div><!-- /dashboard -->
+
+<!-- ════════ FOOTER ════════ -->
+<footer class="footer">
+  Reporte generado el <span id="footerDate"></span> · Análisis Grupo 752 · Normas contables del Principado de Andorra (PGCA) · Moneda: <span>USD</span> · Dashboard desarrollado para <span>RE/MAX EXPRESS</span>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+const PERIODS = ['oct2025','nov2025','dic2025','ene2026','feb2026','mar2026'];
+const LABELS  = ['Oct 2025','Nov 2025','Dic 2025','Ene 2026','Feb 2026','Mar 2026'];
+
+const GASTOS_RAW = {
+  '752021': {name:'Fotografía Inmobiliaria',  data:[0,0,0,0,0,155.10]},
+  '752027': {name:'Seguro Vehículos',         data:[35.18,33.91,35.28,69.16,65.02,74.26]},
+  '752030': {name:'Mantenim. Vehículos',      data:[0,0,0,9.20,13.22,46.93]},
+  '752031': {name:'Combustible Vehículos',     data:[25.93,11.38,49.88,52.39,53.73,59.65]},
+  '752032': {name:'Autopistas',                data:[9.58,9.62,25.68,20.21,11.59,12.83]},
+  '752033': {name:'Transporte Público',        data:[10.49,27.68,20.91,20.01,17.34,21.06]},
+  '752041': {name:'Oficina (Franquicia)',      data:[12.42,48.14,48.13,48.14,48.13,48.14]},
+  '752043': {name:'SaaS (Software)',           data:[0,0,0,27.97,64.27,60.92]},
+  '752044': {name:'Teléfono e Internet',       data:[18.85,19.11,19.83,38.60,41.42,13.74]},
+  '752046': {name:'Papelería y Merchandising', data:[0.21,65.13,30.99,17.24,44.23,41.24]},
+  '752049': {name:'Cartelería',                data:[0,0,19.70,29.96,32.63,43.79]},
+  '752051': {name:'Representación',            data:[53.87,147.15,31.64,90.65,71.50,55.35]},
+  '752061': {name:'Formación',                 data:[0,63.90,0,-11.16,19.05,-3.44]},
+  '752071': {name:'Publicidad SEM',            data:[0,70.63,0,130.46,27.64,30.93]},
+  '752082': {name:'Amort. Inmov. Material',    data:[0,0,0,4.42,16.38,15.20]},
+};
+
+// Compute totals
+function totalGastosPeriod(pi) {
+  let s = 0;
+  for (const k in GASTOS_RAW) s += GASTOS_RAW[k].data[pi];
+  return s;
+}
+const GASTOS_TOTAL = PERIODS.map((_,i) => parseFloat(totalGastosPeriod(i).toFixed(2)));
+// Ingresos = 0 for all periods
+const INGRESOS_TOTAL = [0,0,0,0,0,0];
+const RESULTADO = GASTOS_TOTAL.map((g,i) => parseFloat((INGRESOS_TOTAL[i] - g).toFixed(2)));
+const ACUMULADO = [];
+RESULTADO.reduce((a,v,i) => { ACUMULADO[i] = parseFloat((a+v).toFixed(2)); return ACUMULADO[i]; }, 0);
+
+// Intermensual variation %
+function varPct(arr) {
+  return arr.map((v,i) => i === 0 ? null : (arr[i-1] === 0 ? null : parseFloat((((v - arr[i-1])/Math.abs(arr[i-1]))*100).toFixed(1))));
+}
+const GASTOS_VAR = varPct(GASTOS_TOTAL);
+
+// Ratio gastos/ingresos → N/A (income=0)
+// Margen neto → -100% always (pure cost center)
+
+// Top subcuentas by total volume
+const subcuentaTotals = Object.entries(GASTOS_RAW).map(([k,v]) => ({code:k, name:v.name, total: v.data.reduce((a,b) => a+b, 0)})).sort((a,b) => b.total - a.total);
+
+// Moving average (3-period)
+function movingAvg(arr, w) {
+  return arr.map((v,i) => {
+    if (i < w-1) return null;
+    let s = 0; for(let j = i-w+1; j<=i; j++) s += arr[j];
+    return parseFloat((s/w).toFixed(2));
+  });
+}
+const GASTOS_MA3 = movingAvg(GASTOS_TOTAL, 3);
+
+// ═══════════════════════════════════════════
+// LINEAR REGRESSION
+// ═══════════════════════════════════════════
+function linReg(y) {
+  const n = y.length;
+  const x = y.map((_,i) => i);
+  const sx = x.reduce((a,b)=>a+b,0);
+  const sy = y.reduce((a,b)=>a+b,0);
+  const sxx = x.reduce((a,v)=>a+v*v,0);
+  const sxy = x.reduce((a,v,i)=>a+v*y[i],0);
+  const slope = (n*sxy - sx*sy)/(n*sxx - sx*sx);
+  const intercept = (sy - slope*sx)/n;
+  // R²
+  const yMean = sy/n;
+  const ssTot = y.reduce((a,v) => a + (v-yMean)**2, 0);
+  const ssRes = y.reduce((a,v,i) => a + (v - (intercept + slope*i))**2, 0);
+  const r2 = ssTot === 0 ? 0 : 1 - ssRes/ssTot;
+  return {slope, intercept, r2, predict: (xi) => parseFloat((intercept + slope*xi).toFixed(2))};
+}
+
+const regGastos = linReg(GASTOS_TOTAL);
+const regResultado = linReg(RESULTADO);
+
+const PROJ_LABELS = ['Abr 2026 (P)','May 2026 (P)','Jun 2026 (P)'];
+const PROJ_GASTOS = [6,7,8].map(x => regGastos.predict(x));
+const PROJ_RESULTADO = PROJ_GASTOS.map(g => parseFloat((0 - g).toFixed(2)));
+const PROJ_ACUM = [];
+let lastAcum = ACUMULADO[5];
+PROJ_RESULTADO.forEach((r,i) => { lastAcum = parseFloat((lastAcum + r).toFixed(2)); PROJ_ACUM[i] = lastAcum; });
+
+// ═══════════════════════════════════════════
+// FORMAT HELPERS
+// ═══════════════════════════════════════════
+const fmt = v => v.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtUSD = v => 'USD ' + fmt(v);
+const fmtPct = v => (v>0?'+':'') + v.toFixed(1) + '%';
+
+// ═══════════════════════════════════════════
+// KPI CARDS
+// ═══════════════════════════════════════════
+function renderKPIs() {
+  const grid = document.getElementById('kpiGrid');
+  const totalGastos6 = GASTOS_TOTAL.reduce((a,b)=>a+b,0);
+  const avgGastos = totalGastos6 / 6;
+  const lastVar = GASTOS_VAR[5];
+  const topSub = subcuentaTotals[0];
+
+  const cards = [
+    {label:'Gastos Totales (6 meses)',value:fmtUSD(totalGastos6),sub:'Acumulado oct 2025 – mar 2026',badge:null,color:'var(--red)'},
+    {label:'Gasto Promedio Mensual',value:fmtUSD(avgGastos),sub:'Media aritmética 6 períodos',badge:null,color:'var(--blue)'},
+    {label:'Resultado Acumulado',value:fmtUSD(ACUMULADO[5]),sub:'Centro de costos puro (Ingr. = 0)',badge:{text:'-100% margen',cls:'badge-neg'},color:'var(--red)'},
+    {label:'Variación Intermensual (Mar)',value:fmtPct(lastVar),sub:'Feb → Mar 2026',badge:{text:lastVar>0?'▲ Aumento':'▼ Descenso',cls:lastVar>0?'badge-neg':'badge-pos'},color:lastVar>0?'var(--red)':'#1a8a4a'},
+    {label:'Top Gasto (Subcuenta)',value:topSub.name,sub:topSub.code + ' — USD ' + fmt(topSub.total) + ' acum.',badge:null,color:'var(--blue)'},
+    {label:'R² Regresión (Gastos)',value:regGastos.r2.toFixed(4),sub:'Fiabilidad del modelo lineal',badge:{text:regGastos.r2>0.7?'Aceptable':'Baja significancia',cls:regGastos.r2>0.7?'badge-pos':'badge-neutral'},color:'var(--blue)'},
+  ];
+
+  grid.innerHTML = cards.map(c => `
+    <div class="kpi-card">
+      <div class="accent-stripe" style="background:${c.color}"></div>
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value" style="font-size:${c.value.length>18?'1.2rem':'1.7rem'}">${c.value}</div>
+      <div class="kpi-sub">${c.sub}</div>
+      ${c.badge ? `<div class="kpi-badge ${c.badge.cls}">${c.badge.text}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════════
+let chartBar, chartLine, chartDonut, chartEvol;
+
+const COLORS_GASTOS = ['#DC1C2E','#003DA5','#E85D6F','#3371CC','#F4A261','#2A9D8F','#E76F51','#6A4C93','#1982C4','#8AC926','#FF595E','#FFCA3A','#6D6875','#577590','#F94144'];
+
+function buildChartBar() {
+  const ctx = document.getElementById('chartBar').getContext('2d');
+  if (chartBar) chartBar.destroy();
+  chartBar = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: LABELS,
+      datasets: [
+        {label:'Gastos Grupo 752',data:GASTOS_TOTAL,backgroundColor:'rgba(220,28,46,0.82)',borderColor:'#DC1C2E',borderWidth:1.5,borderRadius:6,barPercentage:0.6},
+        {label:'Media Móvil (3m)',data:GASTOS_MA3,type:'line',borderColor:'#003DA5',backgroundColor:'transparent',borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#003DA5',tension:0.35,spanGaps:true}
+      ]
+    },
+    options: {
+      responsive:true,
+      plugins:{legend:{position:'bottom',labels:{usePointStyle:true,font:{family:'Source Sans 3',size:12}}}},
+      scales:{
+        y:{beginAtZero:true,ticks:{callback:v=>'$'+v,font:{size:11}},grid:{color:'#eef1f6'}},
+        x:{grid:{display:false},ticks:{font:{size:11}}}
+      }
+    }
+  });
+}
+
+function buildChartLine() {
+  const ctx = document.getElementById('chartLine').getContext('2d');
+  if (chartLine) chartLine.destroy();
+  const allLabels = [...LABELS, ...PROJ_LABELS];
+  const histData = [...RESULTADO, null, null, null];
+  const projData = [null, null, null, null, null, RESULTADO[5], ...PROJ_RESULTADO];
+  const acumHist = [...ACUMULADO, null, null, null];
+  const acumProj = [null, null, null, null, null, ACUMULADO[5], ...PROJ_ACUM];
+
+  chartLine = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: allLabels,
+      datasets: [
+        {label:'Resultado Neto',data:histData,borderColor:'#DC1C2E',backgroundColor:'rgba(220,28,46,0.08)',fill:true,borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#DC1C2E',tension:0.3},
+        {label:'Proyección Resultado',data:projData,borderColor:'#DC1C2E',borderDash:[6,4],backgroundColor:'transparent',borderWidth:2,pointRadius:4,pointStyle:'triangle',pointBackgroundColor:'#E85D6F',tension:0.3,spanGaps:true},
+        {label:'Acumulado',data:acumHist,borderColor:'#003DA5',backgroundColor:'rgba(0,61,165,0.06)',fill:true,borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#003DA5',tension:0.3},
+        {label:'Proy. Acumulado',data:acumProj,borderColor:'#003DA5',borderDash:[6,4],backgroundColor:'transparent',borderWidth:2,pointRadius:4,pointStyle:'triangle',pointBackgroundColor:'#3371CC',tension:0.3,spanGaps:true},
+      ]
+    },
+    options: {
+      responsive:true,
+      plugins:{legend:{position:'bottom',labels:{usePointStyle:true,font:{family:'Source Sans 3',size:11}}}},
+      scales:{
+        y:{ticks:{callback:v=>'$'+v,font:{size:11}},grid:{color:'#eef1f6'}},
+        x:{grid:{display:false},ticks:{font:{size:10}}}
+      }
+    }
+  });
+}
+
+function buildDonutGastos() {
+  const ctx = document.getElementById('chartDonutGastos').getContext('2d');
+  if (chartDonut) chartDonut.destroy();
+  const sortedSubs = subcuentaTotals.filter(s => s.total > 0);
+  chartDonut = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: sortedSubs.map(s => s.code + ' ' + s.name),
+      datasets: [{
+        data: sortedSubs.map(s => parseFloat(s.total.toFixed(2))),
+        backgroundColor: COLORS_GASTOS.slice(0, sortedSubs.length),
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '52%',
+      plugins: {
+        legend: {position:'right',labels:{font:{family:'Source Sans 3',size:11},boxWidth:14,padding:8}},
+        tooltip:{callbacks:{label:ctx => ctx.label + ': USD ' + fmt(ctx.parsed) + ' (' + ((ctx.parsed/GASTOS_TOTAL.reduce((a,b)=>a+b,0))*100).toFixed(1) + '%)'}}
+      }
+    }
+  });
+}
+
+function buildChartEvolucion() {
+  const ctx = document.getElementById('chartEvolucion').getContext('2d');
+  if (chartEvol) chartEvol.destroy();
+  chartEvol = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: LABELS.slice(1),
+      datasets: [{
+        label:'Variación Intermensual (%)',
+        data: GASTOS_VAR.slice(1),
+        backgroundColor: GASTOS_VAR.slice(1).map(v => v > 0 ? 'rgba(220,28,46,0.75)' : 'rgba(26,138,74,0.75)'),
+        borderRadius: 6,
+        barPercentage: 0.55
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx => fmtPct(ctx.parsed.y)}}
+      },
+      scales: {
+        y:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#eef1f6'}},
+        x:{grid:{display:false},ticks:{font:{size:11}}}
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════
+// DATA TABLE
+// ═══════════════════════════════════════════
+function renderTable() {
+  const t = document.getElementById('dataTable');
+  let html = '<thead><tr><th>Cuenta / Concepto</th>';
+  LABELS.forEach(l => html += `<th>${l}</th>`);
+  html += '<th>TOTAL</th></tr></thead><tbody>';
+
+  // Ingreso row
+  html += '<tr class="row-total"><td>INGRESOS (752000–752019)</td>';
+  INGRESOS_TOTAL.forEach(v => html += `<td>${fmtUSD(v)}</td>`);
+  html += `<td>${fmtUSD(0)}</td></tr>`;
+
+  // Each gasto
+  for (const [code, info] of Object.entries(GASTOS_RAW)) {
+    const rowTotal = info.data.reduce((a,b) => a+b, 0);
+    html += `<tr><td>${code} ${info.name}</td>`;
+    info.data.forEach(v => html += `<td class="${v<0?'pos':'neg'}">${v===0?'—':fmtUSD(Math.abs(v))}${v<0?' ✱':''}</td>`);
+    html += `<td class="neg">${fmtUSD(rowTotal)}</td></tr>`;
+  }
+
+  // Total gastos
+  html += '<tr class="row-total"><td>TOTAL GASTOS</td>';
+  GASTOS_TOTAL.forEach(v => html += `<td class="neg">${fmtUSD(v)}</td>`);
+  html += `<td class="neg">${fmtUSD(GASTOS_TOTAL.reduce((a,b)=>a+b,0))}</td></tr>`;
+
+  // Resultado neto
+  html += '<tr class="row-total"><td>RESULTADO NETO</td>';
+  RESULTADO.forEach(v => html += `<td class="neg">${fmtUSD(v)}</td>`);
+  html += `<td class="neg">${fmtUSD(RESULTADO.reduce((a,b)=>a+b,0))}</td></tr>`;
+
+  // Acumulado
+  html += '<tr class="row-total"><td>ACUMULADO PROGRESIVO</td>';
+  ACUMULADO.forEach(v => html += `<td class="neg">${fmtUSD(v)}</td>`);
+  html += `<td class="neg">${fmtUSD(ACUMULADO[5])}</td></tr>`;
+
+  // Variación intermensual
+  html += '<tr><td>Variación Intermensual (%)</td>';
+  GASTOS_VAR.forEach(v => html += `<td>${v===null?'—':fmtPct(v)}</td>`);
+  html += '<td>—</td></tr>';
+
+  html += '</tbody>';
+  t.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════
+// PROJECTION TABLE
+// ═══════════════════════════════════════════
+function renderProjTable() {
+  const t = document.getElementById('projTable');
+  let html = '<thead><tr><th>Concepto</th>';
+  PROJ_LABELS.forEach(l => html += `<th>${l}</th>`);
+  html += '<th>R²</th></tr></thead><tbody>';
+
+  html += '<tr><td>Gastos Proyectados</td>';
+  PROJ_GASTOS.forEach(v => html += `<td class="neg">${fmtUSD(v)}</td>`);
+  html += `<td class="badge-neutral" style="text-align:center">${regGastos.r2.toFixed(4)}</td></tr>`;
+
+  html += '<tr><td>Resultado Neto Proyectado</td>';
+  PROJ_RESULTADO.forEach(v => html += `<td class="neg">${fmtUSD(v)}</td>`);
+  html += `<td class="badge-neutral" style="text-align:center">${regResultado.r2.toFixed(4)}</td></tr>`;
+
+  html += '<tr class="row-total"><td>Acumulado Proyectado</td>';
+  PROJ_ACUM.forEach(v => html += `<td class="neg">${fmtUSD(v)}</td>`);
+  html += '<td>—</td></tr>';
+
+  html += '</tbody>';
+  t.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════
+// FILTER LOGIC
+// ═══════════════════════════════════════════
+function setView(type) {
+  document.getElementById('btnAll').classList.toggle('btn-active', type==='all');
+  document.getElementById('btnGastos').classList.toggle('btn-active', type==='gastos');
+  // Both views show the same since income=0; toggle could hide income rows
+  const rows = document.querySelectorAll('#dataTable tbody tr');
+  if (rows.length > 0) {
+    rows[0].style.display = type === 'gastos' ? 'none' : '';
+  }
+}
+
+document.getElementById('filterPeriod').addEventListener('change', function() {
+  const val = this.value;
+  if (val === 'all') {
+    buildChartBar(); buildChartLine(); buildDonutGastos(); buildChartEvolucion();
+    return;
+  }
+  const idx = PERIODS.indexOf(val);
+  // Highlight single period
+  const singleGastos = GASTOS_TOTAL.map((v,i) => i===idx?v:0);
+  if(chartBar) {
+    chartBar.data.datasets[0].data = singleGastos;
+    chartBar.data.datasets[0].backgroundColor = GASTOS_TOTAL.map((_,i) => i===idx ? 'rgba(220,28,46,0.9)' : 'rgba(220,28,46,0.15)');
+    chartBar.update();
+  }
+});
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+document.getElementById('footerDate').textContent = new Date().toLocaleDateString('es-AR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+renderKPIs();
+buildChartBar();
+buildChartLine();
+buildDonutGastos();
+buildChartEvolucion();
+renderTable();
+renderProjTable();
+</script>
+</body>
+</html>
